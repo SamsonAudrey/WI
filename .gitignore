@@ -1,0 +1,7 @@
+*.class
+*.log
+.idea
+project
+target
+metastore_db/
+.DS_Store
