@@ -23,6 +23,30 @@ object DataCleaner {
     dataFrame.select(columnsToKeep.head, columnsToKeep.tail: _*)
   }
 
+
+  /**
+    * Replace empty columns of AppOrSite with "N/A"
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanAppOrSite(dataFrame: DataFrame): DataFrame = {
+    dataFrame.na.fill(EMPTY_VAL,Seq("appOrSite"))
+  }
+
+
+  /**
+    * Replace Array[String] value of AppOrSite with String value
+    * And replace empty columns with "N/A"
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanSize(dataFrame: DataFrame): DataFrame = {
+    dataFrame.withColumn(colName = "size",
+      when(col("size").isNotNull, concat(col("size")(0),lit("x"),col("size")(1)))
+        .otherwise(EMPTY_VAL))
+  }
+
+
   /**
     * @param dataFrame
     * @return DataFrame
@@ -96,7 +120,9 @@ object DataCleaner {
   def clean(dataFrame: DataFrame): DataFrame = {
     val newDataFrame = dataFrame
     val dataFrameCleanCol = selectColumns(newDataFrame)
-    val dataFrameCleanOS = cleanOS(dataFrameCleanCol)
+    val dataFrameCleanSize = cleanSize(dataFrameCleanCol)
+    val dataFrameCleanAOS = cleanAppOrSite(dataFrameCleanSize)
+    val dataFrameCleanOS = cleanOS(dataFrameCleanAOS)
     val dataFrameCleanBFloor = cleanBidFloor(dataFrameCleanOS)
     val dataFrameCleanPublisher = cleanPublisher(dataFrameCleanBFloor)
     val dataFrameCleanMedia = cleanMedia(dataFrameCleanPublisher)
