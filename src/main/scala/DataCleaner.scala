@@ -1,5 +1,5 @@
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{when, _}
 
 object DataCleaner {
 
@@ -70,6 +70,16 @@ object DataCleaner {
     dataFrame.na.fill(EMPTY_VAL,Seq("user"))
   }
 
+  /**
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanInterest(dataFrame: DataFrame): DataFrame = {
+    dataFrame.withColumn(colName = "interests",
+      when(col("interests").isNotNull, regexp_replace(dataFrame("interests"), "(-)[0-9]+", ""))
+        .otherwise(EMPTY_VAL)
+    )
+  }
 
 
   /**
@@ -85,7 +95,8 @@ object DataCleaner {
     val dataFrameCleanPublisher = cleanPublisher(dataFrameCleanBFloor)
     val dataFrameCleanMedia = cleanMedia(dataFrameCleanPublisher)
     val dataFrameCleanUser = cleanUser(dataFrameCleanMedia)
-    dataFrameCleanUser
+    val dataFrameCleanInterests = cleanInterest(dataFrameCleanUser)
+    dataFrameCleanInterests
   }
 
 }

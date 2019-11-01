@@ -4,7 +4,6 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Main extends App {
 
-  println("Spark")
   val spark: SparkSession = SparkSession
     .builder()
     .appName("WiClick")
@@ -18,15 +17,16 @@ object Main extends App {
   println("Cleaning")
   val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
 
-  /*println("Select")
-  val dataStudentsCleaned: DataFrame = DataCleaner.selectColumns(dataStudentsRaw)*/
-
   println("Write")
   val path = "/Users/audreysamson/Downloads/data-students"
   deleteRecursively(new File(path))
   dataStudentsCleaned.write.json(path)
 
 
+  /**
+    *
+    * @param file
+    */
   def deleteRecursively(file: File): Unit = {
     if (file.isDirectory) {
       file.listFiles.foreach(deleteRecursively)
