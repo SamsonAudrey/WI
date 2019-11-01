@@ -37,6 +37,7 @@ object DataCleaner {
   }
 
   /**
+    * Replace empty columns of BidFloor with the average of all BidFloor values
     * @param dataFrame
     * @return DataFrame
     */
@@ -47,6 +48,7 @@ object DataCleaner {
   }
 
   /**
+    * Replace empty columns of Publisher with "N/A"
     * @param dataFrame
     * @return DataFrame
     */
@@ -55,6 +57,7 @@ object DataCleaner {
   }
 
   /**
+    * Replace empty columns of Media with "N/A"
     * @param dataFrame
     * @return DataFrame
     */
@@ -63,6 +66,7 @@ object DataCleaner {
   }
 
   /**
+    * Replace empty columns of User with "N/A"
     * @param dataFrame
     * @return DataFrame
     */
@@ -71,6 +75,8 @@ object DataCleaner {
   }
 
   /**
+    * Replace sub-value of Interests with mother value (example : "IAB1-4" is replaced with "IAB1")
+    * And replace empty columns with "N/A"
     * @param dataFrame
     * @return DataFrame
     */
@@ -83,7 +89,7 @@ object DataCleaner {
 
 
   /**
-    *
+    * Clean the dataframe by cleaning every column
     * @param dataFrame
     * @return DataFrame
     */

@@ -18,7 +18,7 @@ object Main extends App {
   val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
 
   println("Write")
-  val path = "/Users/audreysamson/Downloads/data-students"
+  val path = "/Users/audreysamson/Downloads/data-students" // TO CHANGE
   deleteRecursively(new File(path))
   dataStudentsCleaned.write.json(path)
 
