@@ -41,10 +41,35 @@ object DataCleaner {
     * @return DataFrame
     */
   def cleanBidFloor(dataFrame: DataFrame): DataFrame = {
-    val avgBidFloor: DataFrame = dataFrame.select(avg("bidFloor") as "mean") //.agg(avg("bidFloor") as "mean")
+    val avgBidFloor: DataFrame = dataFrame.select(avg("bidFloor") as "mean")
     val mean = avgBidFloor.select(col("mean")).first.get(0)
     dataFrame.na.fill(mean.toString.toDouble,Seq("bidFloor"))
   }
+
+  /**
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanPublisher(dataFrame: DataFrame): DataFrame = {
+    dataFrame.na.fill(EMPTY_VAL,Seq("publisher"))
+  }
+
+  /**
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanMedia(dataFrame: DataFrame): DataFrame = {
+    dataFrame.na.fill(EMPTY_VAL,Seq("media"))
+  }
+
+  /**
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanUser(dataFrame: DataFrame): DataFrame = {
+    dataFrame.na.fill(EMPTY_VAL,Seq("user"))
+  }
+
 
 
   /**
@@ -57,7 +82,10 @@ object DataCleaner {
     val dataFrameCleanCol = selectColumns(newDataFrame)
     val dataFrameCleanOS = cleanOS(dataFrameCleanCol)
     val dataFrameCleanBFloor = cleanBidFloor(dataFrameCleanOS)
-    dataFrameCleanBFloor
+    val dataFrameCleanPublisher = cleanPublisher(dataFrameCleanBFloor)
+    val dataFrameCleanMedia = cleanMedia(dataFrameCleanPublisher)
+    val dataFrameCleanUser = cleanUser(dataFrameCleanMedia)
+    dataFrameCleanUser
   }
 
 }
