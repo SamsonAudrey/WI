@@ -1,3 +1,5 @@
+import java.io.File
+
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Main extends App {
@@ -10,12 +12,27 @@ object Main extends App {
     .getOrCreate()
   spark.sparkContext.setLogLevel("ERROR")
 
-  println("Lecture")
-  val dataStudentsRaw: DataFrame = spark.read.json("/home/quentin/Téléchargements/data-students.json")
+  println("Read")
+  val dataStudentsRaw: DataFrame = spark.read.json("/Users/audreysamson/Downloads/data-students.json")
 
-  println("Selection")
-  val dataStudentsCleaned: DataFrame = DataCleaner.selectColumns(dataStudentsRaw)
+  println("Cleaning")
+  val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
 
-  println("Ecriture")
-  dataStudentsCleaned.write.json("/home/quentin/Téléchargements/data-students-cleaned.json")
+  /*println("Select")
+  val dataStudentsCleaned: DataFrame = DataCleaner.selectColumns(dataStudentsRaw)*/
+
+  println("Write")
+  val path = "/Users/audreysamson/Downloads/data-students"
+  deleteRecursively(new File(path))
+  dataStudentsCleaned.write.json(path)
+
+
+  def deleteRecursively(file: File): Unit = {
+    if (file.isDirectory) {
+      file.listFiles.foreach(deleteRecursively)
+    }
+    if (file.exists && !file.delete) {
+      throw new Exception(s"Unable to delete ${file.getAbsolutePath}")
+    }
+  }
 }
