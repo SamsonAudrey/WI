@@ -1,5 +1,7 @@
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.{when, _}
+import org.apache.spark.sql.functions.{col, when, _}
+import org.apache.spark.ml.feature.{StringIndexer, StringIndexerModel}
+import org.apache.spark.sql
 
 object DataCleaner {
 
@@ -132,6 +134,19 @@ object DataCleaner {
 
 
   /**
+    *
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanLabel(dataFrame: DataFrame): DataFrame = {
+    dataFrame.withColumn(colName = "label",
+      when(col("label") === "true", 1.0)
+        .otherwise(0.0)
+    )
+  }
+
+
+  /**
     * Clean the dataframe by cleaning every column
     * @param dataFrame
     * @return DataFrame
@@ -148,7 +163,20 @@ object DataCleaner {
     val dataFrameCleanUser = cleanUser(dataFrameCleanMedia)
     val dataFrameCleanInterests = cleanInterest(dataFrameCleanUser)
     val dataFrameCleanTimestamp = cleanTimestamp(dataFrameCleanInterests)
-    dataFrameCleanTimestamp
+    val dataFrameCleanLabel = cleanLabel(dataFrameCleanTimestamp)
+    dataFrameCleanLabel
+  }
+
+
+  def transfromToIndexColumn(dataFrame: DataFrame, cols: Array[String]): DataFrame = {
+    var dataFrameIndex = dataFrame
+
+    for (col <- cols) {
+      val indexer = new StringIndexer().setInputCol(col).setOutputCol(col + "Index")
+      val indexed = indexer.fit(dataFrameIndex).transform(dataFrameIndex).drop(col)
+      dataFrameIndex = indexed
+    }
+    dataFrameIndex
   }
 
 }

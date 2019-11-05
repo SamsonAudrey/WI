@@ -30,9 +30,16 @@ object Main extends App {
     println("Cleaning")
     val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
 
+    // Indexing
+    val indexedDataFrame = DataCleaner.transfromToIndexColumn(dataStudentsCleaned, Array("appOrSite", "size", "os", "timestamp", "publisher", "media", "user", "interests"))
+    indexedDataFrame.show()
+
     println(s"Write (in $resultPath folder)")
     deleteRecursively(new File(resultPath))
     dataStudentsCleaned.write.json(resultPath)
+
+    // MODEL
+    Model.train(indexedDataFrame.limit(1000))
   }
 
 

@@ -14,7 +14,7 @@ object Model  {
     println("NB ROWS : " + df.count())
 
     // Choice of the features used to predict
-    val cols = Array("bidfloor", "type")
+    val cols = Array("appOrSiteIndex","bidFloor", "timestampIndex", "sizeIndex", "osIndex", "mediaIndex")
     // Adding the features column to the DF
     val assembler = new VectorAssembler()
       .setInputCols(cols)
@@ -57,9 +57,9 @@ object Model  {
 
     // Values of parameters of the tree to try to optimize it
     val paramGrid = new ParamGridBuilder()
-      .addGrid(randomForestClassifier.maxBins, Array(25, 28, 31))
-      .addGrid(randomForestClassifier.numTrees, Array(3, 5, 7))
-      .addGrid(randomForestClassifier.maxDepth, Array(4, 6, 8))
+      //.addGrid(randomForestClassifier.maxBins, Array(25, 28, 31))
+      //.addGrid(randomForestClassifier.numTrees, Array(3, 5, 7))
+      //.addGrid(randomForestClassifier.maxDepth, Array(4, 6, 8))
       .addGrid(randomForestClassifier.impurity, Array("entropy", "gini"))
       .build()
 
