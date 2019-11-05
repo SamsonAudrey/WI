@@ -19,7 +19,7 @@ object DataCleaner {
    */
   def selectColumns(dataFrame: DataFrame): DataFrame = {
     //val allColumns = Seq("network", "appOrSite", "timestamp", "size", "label", "os", "exchange", "bidFloor", "publisher", "media", "user", "interests", "type", "city", "impid")
-    val columnsToKeep = Seq("appOrSite", "size", "label", "os", "bidFloor", "publisher", "media", "user", "interests")
+    val columnsToKeep = Seq("appOrSite", "timestamp", "size", "label", "os", "bidFloor", "publisher", "media", "user", "interests")
     dataFrame.select(columnsToKeep.head, columnsToKeep.tail: _*)
   }
 
@@ -30,11 +30,9 @@ object DataCleaner {
     * @return DataFrame
     */
   def cleanAppOrSite(dataFrame: DataFrame): DataFrame = {
-    dataFrame.na.fill(EMPTY_VAL,Seq("appOrSite"))
-
     dataFrame.withColumn(colName = "appOrSite",
-      when(lower(col("os")).contains("app"), "app")
-        .when(lower(col("os")).contains("site"), "site")
+      when(lower(col("appOrSite")).contains("app"), "app")
+        .when(lower(col("appOrSite")).contains("site"), "site")
         .otherwise(EMPTY_VAL))
   }
 
@@ -60,7 +58,7 @@ object DataCleaner {
     dataFrame.withColumn(colName = "os",
       when(lower(col("os")).contains("android"), "android")
         .when(lower(col("os")).contains("ios"), "ios")
-        .when(lower(col("os")).contains("windowsphone"), "windowsphone")
+        .when(lower(col("os")).contains("windows"), "windowsphone")
         .when(lower(col("os")).contains("rim"), "rim")
         .otherwise(EMPTY_VAL))
   }
@@ -116,6 +114,28 @@ object DataCleaner {
     )
   }
 
+  /**
+    * Replace empty columns of Timestamp with "N/A"
+    * @param dataFrame
+    * @return DataFrame
+    */
+  def cleanTimestamp(dataFrame: DataFrame): DataFrame = {
+    dataFrame.na.fill(EMPTY_VAL,Seq("timestamp"))
+
+    //TODO clean par moment de la journée
+    //from_unixtime(col("timestamp")))
+    val df = dataFrame.withColumn("timestamp", hour(from_unixtime(col("timestamp"))))
+    df.withColumn(colName = "timestamp",
+      when(col("timestamp") >= 20, "evening")
+        .when(col("timestamp") >= 15 && col("timestamp") < 20, "afternoon")
+        .when(col("timestamp") >= 10 && col("timestamp") < 15, "midday")
+        .when(col("timestamp") >= 0 && col("timestamp") < 10, "morning")
+        .otherwise(EMPTY_VAL)
+    )
+    //df.withColumn("timestamp", hour(from_unixtime(col("timestamp"))))
+
+  }
+
 
   /**
     * Clean the dataframe by cleaning every column
@@ -133,7 +153,8 @@ object DataCleaner {
     val dataFrameCleanMedia = cleanMedia(dataFrameCleanPublisher)
     val dataFrameCleanUser = cleanUser(dataFrameCleanMedia)
     val dataFrameCleanInterests = cleanInterest(dataFrameCleanUser)
-    dataFrameCleanInterests
+    val dataFrameCleanTimestamp = cleanTimestamp(dataFrameCleanInterests)
+    dataFrameCleanTimestamp
   }
 
 }
