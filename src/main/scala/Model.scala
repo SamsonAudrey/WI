@@ -8,7 +8,9 @@ import org.apache.spark.sql.functions.{col, _}
 import org.apache.spark.ml.feature.{OneHotEncoder, StringIndexer, VectorAssembler, VectorIndexer, _}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 
-object SparkAPI extends App {
+object Model extends App {
+
+
   Logger.getLogger("org").setLevel(Level.ERROR)
   val spark = SparkSession.builder().config("spark.master","local").getOrCreate()
   spark.conf.set("spark.sql.codegen.wholeStage", false)

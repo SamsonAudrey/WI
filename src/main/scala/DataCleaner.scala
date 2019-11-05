@@ -31,6 +31,11 @@ object DataCleaner {
     */
   def cleanAppOrSite(dataFrame: DataFrame): DataFrame = {
     dataFrame.na.fill(EMPTY_VAL,Seq("appOrSite"))
+
+    dataFrame.withColumn(colName = "appOrSite",
+      when(lower(col("os")).contains("app"), "app")
+        .when(lower(col("os")).contains("site"), "site")
+        .otherwise(EMPTY_VAL))
   }
 
 

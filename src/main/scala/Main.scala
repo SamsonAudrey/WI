@@ -25,7 +25,7 @@ object Main extends App {
 
   /**
     *
-    * @param file
+    * @param file : File to delete
     */
   def deleteRecursively(file: File): Unit = {
     if (file.isDirectory) {
