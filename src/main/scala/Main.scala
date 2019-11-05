@@ -13,14 +13,34 @@ object Main extends App {
 
 
   println("What is the path of the dataFrame ? (please enter the path of a .json file)")
-  val input = "data-students.json"
+  val input = scala.io.StdIn.readLine()
 
-  println("Read")
-  val dataStudentsRaw: DataFrame = spark.read.json(input)
+  if (!new File(input).exists()) {
+    println("This file doesn't exist.")
+  }
 
-  println("Cleaning")
-  val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
+  else {
+    val folderPath = input.split("/").map(_.trim).toList.dropRight(1).mkString("/")
+    val resultPath = folderPath.concat("/data-students-results")
+    // /Users/audreysamson/Downloads/data-students.json
 
+    println("Read")
+    val dataStudentsRaw: DataFrame = spark.read.json(input)
+
+    println("Cleaning")
+    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
+
+    // Indexing
+    val indexedDataFrame = DataCleaner.transfromToIndexColumn(dataStudentsCleaned, Array("appOrSite", "size", "os", "timestamp", "publisher", "media", "user", "interests"))
+    indexedDataFrame.show()
+
+    println(s"Write (in $resultPath folder)")
+    deleteRecursively(new File(resultPath))
+    dataStudentsCleaned.write.json(resultPath)
+
+    // MODEL
+    Model.train(indexedDataFrame.limit(1000))
+  }
 
 
   /**
