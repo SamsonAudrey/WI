@@ -1,9 +1,10 @@
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
-import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
+import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, MulticlassClassificationEvaluator}
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import org.apache.spark.ml.feature.{OneHotEncoder, StringIndexer, VectorAssembler, VectorIndexer, _}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import org.apache.spark.mllib.evaluation.MulticlassMetrics
 
 object Model  {
 
@@ -12,6 +13,7 @@ object Model  {
     df.printSchema()
     df.show(10)
     println("NB ROWS : " + df.count())
+    df.limit(100)
 
     // Choice of the features used to predict
     val cols = Array("bidfloor", "type")
@@ -46,10 +48,22 @@ object Model  {
     val pipelinePredictionDf = pipelineModel.transform(pipelineTestingData)
     pipelinePredictionDf.show(20)
 
+
+    // evaluate the model
+    val predictionsAndLabels = pipelinePredictionDf.select("pred", "label").rdd
+      .map(row => (row.getDouble(0), row.getDouble(1)))
+
+    val metrics = new MulticlassMetrics(predictionsAndLabels)
+
+    val confusionMatrix = metrics.confusionMatrix
+    // compute the false positive rate per label
+    val predictionColSchema = pipelinePredictionDf.schema("prediction")
+
+    println(s" Confusion Matrix\n ${confusionMatrix.toString}\n")
     // Define evaluator and his metrics
-    val evaluator = new BinaryClassificationEvaluator()
-      .setLabelCol("pred")
-      .setMetricName("areaUnderROC")
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("label")
+      .setMetricName("weightedPrecision")
     // measure the accuracy
     val accuracy = evaluator.evaluate(pipelinePredictionDf)
     println(accuracy)
