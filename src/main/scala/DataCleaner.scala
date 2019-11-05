@@ -58,7 +58,7 @@ object DataCleaner {
     dataFrame.withColumn(colName = "os",
       when(lower(col("os")).contains("android"), "android")
         .when(lower(col("os")).contains("ios"), "ios")
-        .when(lower(col("os")).contains("windows"), "windowsphone")
+        .when(lower(col("os")).contains("windows"), "windows")
         .when(lower(col("os")).contains("rim"), "rim")
         .otherwise(EMPTY_VAL))
   }
@@ -120,10 +120,6 @@ object DataCleaner {
     * @return DataFrame
     */
   def cleanTimestamp(dataFrame: DataFrame): DataFrame = {
-    dataFrame.na.fill(EMPTY_VAL,Seq("timestamp"))
-
-    //TODO clean par moment de la journée
-    //from_unixtime(col("timestamp")))
     val df = dataFrame.withColumn("timestamp", hour(from_unixtime(col("timestamp"))))
     df.withColumn(colName = "timestamp",
       when(col("timestamp") >= 20, "evening")
@@ -132,8 +128,6 @@ object DataCleaner {
         .when(col("timestamp") >= 0 && col("timestamp") < 10, "morning")
         .otherwise(EMPTY_VAL)
     )
-    //df.withColumn("timestamp", hour(from_unixtime(col("timestamp"))))
-
   }
 
 
