@@ -14,15 +14,24 @@ object RFModel  {
 
 
     def load(): PipelineModel = {
-        println("LOADING MODEL")
 
-        val loadedModel: PipelineModel = PipelineModel.read.load("random-forest-model")
+        println("LOADING MODEL")
+        val pathToModel = "random-forest-model"
+        val loadedModel: PipelineModel = PipelineModel.read.load(pathToModel)
         loadedModel
     }
 
 
       // Assume that the DF is clean
-      def train(df :DataFrame, sc : SparkContext ) {
+      def train(df :DataFrame ) {
+
+        val nbTree = 40
+        val depth = 8
+        val maxBins = 100
+        val trueRate = 0.965
+        val falseRate = 0.035
+        val seed = 5043
+        val impurity = "gini"
 
         println("NB ROWS : " + df.count())
 
@@ -34,7 +43,7 @@ object RFModel  {
         val assembler = new VectorAssembler()
           .setInputCols(cols)
           .setOutputCol("features")
-        val featureDf = assembler.transform(df)
+
 
 
         // Creation of the prediction column linked to the label
@@ -46,27 +55,29 @@ object RFModel  {
 
 
         // Spliting Data in test and train set
-        val seed = 5043
+
         val Array(pipelineTrainingData, pipelineTestingData) = df.randomSplit(Array(0.75, 0.25), seed)
          //_______________________________________________________________________________________________________
 
           //_________________________________________CREATING CLASSIFIER __________________________________________
 
-        val trueRate = 0.965
-        val falseRate = 0.035
+
 
         println("RF RESULTS: ")
 
-        println(s"  TRAINING : TRUE RATE : ${trueRate} AND FALSE RATE : $falseRate")
-        val randomForestClassifier = new RandomForestClassifier().setImpurity("gini")
-          .setMaxDepth(9)
-          .setNumTrees(45)
+
+        val randomForestClassifier = new RandomForestClassifier()
+          .setImpurity(impurity)
+          .setMaxDepth(depth)
+          .setNumTrees(nbTree)
           .setFeatureSubsetStrategy("auto")
           .setSeed(seed)
           .setThresholds(Array(trueRate,falseRate))
-          .setMaxBins(100)
+          .setMaxBins(maxBins)
 
     //___________________________________________________________________________________________________________
+
+
 
     //_______________________________________CREATING MODEL ____________________________________________________
 
@@ -78,44 +89,13 @@ object RFModel  {
 
         // test model with test data
         val predictionDf = pipelineModel.transform(pipelineTestingData)
-        predictionDf.show(10)
+
     //_____________________________________________________________________________________________________________
 
 
     //____________________________________METRICS________________________________________________________________
-        val predictionsAndLabelsN = predictionDf.select("prediction", "label").rdd
-          .map(row => (row.getDouble(0), row.getDouble(1)))
-
-        val evaluator = new MulticlassClassificationEvaluator()
-          .setLabelCol("label")
-          .setMetricName("accuracy")
-        // measure the accuracy
-        val evaluatorROC = new BinaryClassificationEvaluator()
-          .setMetricName("areaUnderROC")
-          .setLabelCol("label")
-        val areaROC = evaluatorROC.evaluate(predictionDf)
-        val accuracy = evaluator.evaluate(predictionDf)
-
-
-        val metricsN = new MulticlassMetrics(predictionsAndLabelsN)
-
-        val confusionMatrixN = metricsN.confusionMatrix
-        // compute the false positive rate per label
-
-
-        println(s" Confusion Matrix\n ${confusionMatrixN.toString}\n")
-        val nbTrue = pipelineTestingData.filter(df("label")=== 1.0).count().toDouble
-        val nbFalse = pipelineTestingData.filter(df("label")=== 0.0).count().toDouble
-
-        println(s"ACCU  : ${accuracy*100}")
-          println(s"AreaROC  : ${areaROC*100}")
-        println(s"RENTA : ${(confusionMatrixN.apply(1,1)/(confusionMatrixN.apply(1,1)+confusionMatrixN.apply(0,1)))*100}")
-        println(s"FINDS : ${(confusionMatrixN.apply(1,1)/nbTrue)*100}")
-
-
-        println(s" NB FALSE : $nbFalse AND NB TRUE : $nbTrue")
+       Metrics.show(predictionDf)
     // _______________________________________________________________________________________________
-
 
 
     // ___________________________________ SAVE MODEL ________________________________________________
@@ -123,19 +103,15 @@ object RFModel  {
     // _______________________________________________________________________________________________
 
 
-
-
-
-
-
-
-
       }
-    def predict(df :DataFrame, model : PipelineModel, sc : SparkContext  ): Unit = {
+
+
+
+    def predict(df :DataFrame, model : PipelineModel  ): DataFrame = {
 
         val predictionDf = model.transform(df)
 
-
+        predictionDf
 
 
     }

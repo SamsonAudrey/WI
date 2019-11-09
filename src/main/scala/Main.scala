@@ -28,18 +28,24 @@ object Main extends App {
     val dataStudentsRaw: DataFrame = spark.read.json(input)
 
     println("Cleaning")
-    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
+
+    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw.limit(10000))
+
 
     // Indexing
     val indexedDataFrame = DataCleaner.transfromToIndexColumn(dataStudentsCleaned, Array("appOrSite", "size", "os", "timestamp", "publisher", "media", "user", "interests"))
-    indexedDataFrame.show()
 
-    println(s"Write (in $resultPath folder)")
-    deleteRecursively(new File(resultPath))
-    dataStudentsCleaned.write.json(resultPath)
 
-    // MODEL
-    Model.train(indexedDataFrame.limit(1000))
+
+
+    RFModel.train(indexedDataFrame)
+
+    val predictionDf = RFModel.predict(indexedDataFrame, RFModel.load())
+
+    Metrics.show(predictionDf)
+
+
+    spark.close()
   }
 
 
