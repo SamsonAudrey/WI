@@ -176,7 +176,24 @@ object DataCleaner {
       val indexed = indexer.fit(dataFrameIndex).transform(dataFrameIndex).drop(col)
       dataFrameIndex = indexed
     }
-    dataFrameIndex
+    dataFrameIndex.orderBy(rand()).show(20)
+
+    dataFrameIndex.orderBy(rand())
+
+  }
+
+  def underSampleDF(df : DataFrame) : DataFrame = {
+
+    println(df.count())
+    val dfpos = df.filter(df("label") === 1.0)
+    val nbPos = dfpos.count()
+    val dfneg = df.filter(df("label") === 0.0).limit(nbPos.toInt)
+
+    val df2 = dfpos.union(dfneg).orderBy(rand())
+    df2.show(20)
+    println(df2.count())
+    df2
+
   }
 
 }
