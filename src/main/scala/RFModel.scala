@@ -15,7 +15,7 @@ object RFModel  {
 
     def load(): PipelineModel = {
 
-        println("LOADING MODEL")
+        println("LOADING MODEL \n")
         val pathToModel = "random-forest-model"
         val loadedModel: PipelineModel = PipelineModel.read.load(pathToModel)
         loadedModel
@@ -109,8 +109,9 @@ object RFModel  {
 
     def predict(df :DataFrame, model : PipelineModel  ): DataFrame = {
 
+        println("START PREDICTION \n")
         val predictionDf = model.transform(df)
-
+        println("PREDICTION COMPLETED  \n ")
         predictionDf
 
 
