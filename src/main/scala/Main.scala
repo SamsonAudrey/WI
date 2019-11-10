@@ -31,7 +31,7 @@ object Main extends App {
   var defaultValues = "Default values ( sbt run ): " + pathToDataJSON + "  " + model + "  " + task
   var possibleValues = "Possibles values: \n[task]: predict or train"
 
-
+  println(s"NB ARGS : ${args.length}")
   if(args.length > 0) {
     if(args(0) == "help" || args(0) == "usage") {
 
@@ -41,18 +41,20 @@ object Main extends App {
       System.exit(0)
     }
     if(args.length > 1) {
+
     pathToDataJSON = args(0)
     task = args(1)
+    println(s"path : ${args(0)} task : ${args(1)}")
     }
   }
 
 
 
 
-    println("Read")
+    println(s"Reading $pathToDataJSON ")
     val dataStudentsRaw: DataFrame = spark.read.json(pathToDataJSON)
 
-    println("Cleaning")
+    println(s"Cleaning $pathToDataJSON ")
 
     val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw.limit(10000))
 
