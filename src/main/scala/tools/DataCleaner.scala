@@ -16,13 +16,18 @@ object DataCleaner {
   spark.sparkContext.setLogLevel("ERROR")
 
   /**
-   * Keep the columns that are interesting
-   * @param dataFrame
+    * Keep the columns that are interesting
+    * @param dataFrame
     * @return DataFrame
-   */
+    */
   def selectColumns(dataFrame: DataFrame): DataFrame = {
     //val allColumns = Seq("network", "appOrSite", "timestamp", "size", "label", "os", "exchange", "bidFloor", "publisher", "media", "user", "interests", "type", "city", "impid")
     val columnsToKeep = Seq("appOrSite", "timestamp", "size", "label", "os", "bidFloor", "publisher", "media", "user","interests","type","exchange")
+    dataFrame.select(columnsToKeep.head, columnsToKeep.tail: _*)
+  }
+  def selectPredColumns(dataFrame: DataFrame): DataFrame = {
+    //val allColumns = Seq("network", "appOrSite", "timestamp", "size", "label", "os", "exchange", "bidFloor", "publisher", "media", "user", "interests", "type", "city", "impid")
+    val columnsToKeep = Seq("appOrSite", "timestamp", "size", "os", "bidFloor", "publisher", "media", "user","interests","type","exchange")
     dataFrame.select(columnsToKeep.head, columnsToKeep.tail: _*)
   }
 
@@ -156,14 +161,14 @@ object DataCleaner {
         .otherwise(0)
     )
   }
- /* def cleanSize(dataFrame : DataFrame): DataFrame = {
-    dataFrame.withColumn(colName = "size",
-      when(col("size").isNotNull, concat(col("size")(0),lit("x"),col("size")(1)))
-        .otherwise(EMPTY_VAL))
-  }*/
-def sizeToString(c : Column): Column = {
-  concat(lit("["), concat_ws(",", c), lit("]"))
-}
+  /* def cleanSize(dataFrame : DataFrame): DataFrame = {
+     dataFrame.withColumn(colName = "size",
+       when(col("size").isNotNull, concat(col("size")(0),lit("x"),col("size")(1)))
+         .otherwise(EMPTY_VAL))
+   }*/
+  def sizeToString(c : Column): Column = {
+    concat(lit("["), concat_ws(",", c), lit("]"))
+  }
   /**
     *
     * @param dataFrame
@@ -198,6 +203,26 @@ def sizeToString(c : Column): Column = {
     val dataFrameCleanExchange = cleanExchange(dataFrameCleanType)
     val dataFrameCleanLabel = cleanLabel(dataFrameCleanExchange)
     dataFrameCleanLabel
+  }
+  def predictClean(dataFrame: DataFrame): DataFrame = {
+    var newDataFrame = dataFrame
+
+    if (dataFrame.columns.contains("label")){
+      newDataFrame = dataFrame.drop("label")
+    }
+    //val dataFrameCleanCol = selectPredColumns(newDataFrame)
+    val dataFrameCleanSize = cleanSize(newDataFrame)
+    val dataFrameCleanAOS = cleanAppOrSite(dataFrameCleanSize)
+    val dataFrameCleanOS = cleanOS(dataFrameCleanAOS)
+    val dataFrameCleanBFloor = cleanBidFloor(dataFrameCleanOS)
+    val dataFrameCleanPublisher = cleanPublisher(dataFrameCleanBFloor)
+    val dataFrameCleanMedia = cleanMedia(dataFrameCleanPublisher)
+    val dataFrameCleanUser = cleanUser(dataFrameCleanMedia)
+    val dataFrameCleanInterests = cleanInterests(dataFrameCleanUser)
+    val dataFrameCleanTimestamp = cleanTimestamp(dataFrameCleanInterests)
+    val dataFrameCleanType = cleanType(dataFrameCleanTimestamp)
+    val dataFrameCleanExchange = cleanExchange(dataFrameCleanType)
+    dataFrameCleanExchange
   }
 
 

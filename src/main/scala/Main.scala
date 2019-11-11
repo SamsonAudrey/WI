@@ -47,9 +47,7 @@ object Main extends App {
     println(s"Reading $pathToDataJSON ")
     val dataStudentsRaw: DataFrame = spark.read.json(pathToDataJSON)
 
-    println(s"Cleaning $pathToDataJSON ")
 
-    val dataStudentsCleaned =DataCleaner.clean(dataStudentsRaw)
 
 
 
@@ -57,20 +55,30 @@ object Main extends App {
 
     task match {
 
-      case "train" =>  RFModel.train(dataStudentsCleaned)
+      case "train" =>
+        println(s"Cleaning $pathToDataJSON ")
+
+        val dataStudentsCleaned =DataCleaner.clean(dataStudentsRaw.limit(10))
+        RFModel.train(dataStudentsCleaned)
 
       case "predict"=>   {
+        println(s"Cleaning $pathToDataJSON ")
+
+        val dataStudentsCleaned =DataCleaner.predictClean(dataStudentsRaw.limit(10))
+
+        val data = dataStudentsCleaned.withColumnRenamed("bidfloor","bidFloor")
+        data.show(5)
         val myModel = RFModel.load()
-        val predictionDf = RFModel.predict(dataStudentsCleaned, myModel )
-        predictionDf.show(5)
-        Metrics.show(predictionDf)
+        val predictionDf = RFModel.predict(data, myModel )
+
+
 
         var timerDataset = dataStudentsRaw.limit(1000)
 
         println ("CLEANING TIME FOR 1000 LINES ")
         Timer.time {
 
-          timerDataset = DataCleaner.clean(timerDataset)
+          timerDataset = DataCleaner.predictClean(timerDataset).withColumnRenamed("bidfloor","bidFloor")
 
 
         }
@@ -96,13 +104,15 @@ object Main extends App {
         val labelColumn = pred.select("prediction").withColumn("idl", monotonically_increasing_id())
         val dataFrameToSave = labelColumn.join(df, col("idl") === col("id"), "left_outer").drop("id").drop("idl")
         val res = dataFrameToSave.withColumnRenamed("prediction", "label").withColumn("size", DataCleaner.sizeToString(col("size")))
-        res.show(5)
+
         res.repartition(1).coalesce(1)
           .write
           .mode ("overwrite")
           .format("com.databricks.spark.csv")
           .option("header", "true")
           .save(s"PREDICTIONCSV")
+
+        println("RESULTS IN PREDICTIONCSV FOLDER")
 
       }
       case _ => println(" TASK unknown you should choose a task between train and predict ")
