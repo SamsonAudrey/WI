@@ -22,7 +22,7 @@ object RFModel  {
       def train(df :DataFrame ) {
 
         val nbTree = 40
-        val depth = 8
+        val depth = 7
         val maxBins = 100
         val trueRate = 0.965
         val falseRate = 0.035
@@ -30,10 +30,10 @@ object RFModel  {
         val impurity = "gini"
 
         println("NB ROWS : " + df.count())
-
+        df.show(10)
         //_________________________DATAFRAMES PREPARTION ________________________________
         // Choice of the features used to predict
-        val cols = Array("appOrSiteIndex","bidFloor", "timestampIndex", "sizeIndex", "osIndex", "mediaIndex" , "type", "IAB1", "IAB2", "IAB3", "IAB4", "IAB5", "IAB6", "IAB7", "IAB8", "IAB9", "IAB10", "IAB11", "IAB12", "IAB13", "IAB14", "IAB15", "IAB16", "IAB17", "IAB18", "IAB19", "IAB20", "IAB21", "IAB22", "IAB23", "IAB24", "IAB25", "IAB26")
+        val cols = Array("appOrSite","bidFloor", "timestamp", "size", "os", "media" , "type" ,"exchange", "IAB1", "IAB2", "IAB3", "IAB4", "IAB5", "IAB6", "IAB7", "IAB8", "IAB9", "IAB10", "IAB11", "IAB12", "IAB13", "IAB14", "IAB15", "IAB16", "IAB17", "IAB18", "IAB19", "IAB20", "IAB21", "IAB22", "IAB23", "IAB24", "IAB25", "IAB26")
 
         // Adding the features column to the DF
         val assembler = new VectorAssembler()
@@ -68,7 +68,7 @@ object RFModel  {
           .setNumTrees(nbTree)
           .setFeatureSubsetStrategy("auto")
           .setSeed(seed)
-          .setThresholds(Array(trueRate,falseRate))
+          //.setThresholds(Array(trueRate,falseRate))
           .setMaxBins(maxBins)
 
     //___________________________________________________________________________________________________________

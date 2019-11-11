@@ -2,7 +2,7 @@ import java.io.File
 
 import models.RFModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import tools.{DataCleaner, Metrics}
+import tools.{DataCleaner, Metrics , Timer}
 
 object Main extends App {
 
@@ -14,17 +14,7 @@ object Main extends App {
   spark.sparkContext.setLogLevel("ERROR")
 
 
-  /*println("What is the path of the dataFrame ? (please enter the path of a .json file)")
-  val input = scala.io.StdIn.readLine()
 
-  if (!new File(input).exists()) {
-    println("This file doesn't exist.")
-  }
-
-  else {
-    val folderPath = input.split("/").map(_.trim).toList.dropRight(1).mkString("/")
-    val resultPath = folderPath.concat("/data-students-results")
-    // /Users/audreysamson/Downloads/data-students.json*/
 
   var pathToDataJSON = "data-students.json"
   var model = "randomForest"
@@ -58,24 +48,51 @@ object Main extends App {
 
     println(s"Cleaning $pathToDataJSON ")
 
-    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw.limit(1000000))
-  dataStudentsCleaned.show(10)
+    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
 
 
-    // Indexing
-    val indexedDataFrame = DataCleaner.transfromToIndexColumn(dataStudentsCleaned, Array("appOrSite", "size", "os", "timestamp", "publisher", "media", "user"))
+
 
 
     task match {
 
-      case "train" =>  RFModel.train(indexedDataFrame)
+      case "train" =>  RFModel.train(dataStudentsCleaned)
 
       case "predict"=>   {
-
-        val predictionDf = RFModel.predict(indexedDataFrame, RFModel.load())
+        val myModel = RFModel.load()
+        val predictionDf = RFModel.predict(dataStudentsCleaned, myModel )
 
         Metrics.show(predictionDf)
+
+        var timerDataset = dataStudentsRaw.limit(1000)
+
+        println ("CLEANING TIME FOR 1000 LINES ")
+        Timer.time {
+
+          timerDataset = DataCleaner.clean(timerDataset)
+
+
+        }
+        println ("TIME TO LOAD THE MODEL \n  ")
+        Timer.time {
+
+          RFModel.load()
+
+        }
+
+        println ("PREDICTING TIME FOR 1000 LINES \n  ")
+        Timer.time {
+
+          val predictionTimerDf = RFModel.predict(timerDataset, myModel )
+
+        }
+
+        //val res : DataFrame= res.withColumn("label" , predictionDf("prediction"))
+        //res.coalesce(1).write.csv("res.csv")
+
+
       }
+      case _ => println(" TASK unknown you should choose a task between train and predict ")
     }
 
 

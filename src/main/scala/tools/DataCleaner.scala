@@ -22,7 +22,7 @@ object DataCleaner {
    */
   def selectColumns(dataFrame: DataFrame): DataFrame = {
     //val allColumns = Seq("network", "appOrSite", "timestamp", "size", "label", "os", "exchange", "bidFloor", "publisher", "media", "user", "interests", "type", "city", "impid")
-    val columnsToKeep = Seq("appOrSite", "timestamp", "size", "label", "os", "bidFloor", "publisher", "media", "user","interests","type")
+    val columnsToKeep = Seq("appOrSite", "timestamp", "size", "label", "os", "bidFloor", "publisher", "media", "user","interests","type","exchange")
     dataFrame.select(columnsToKeep.head, columnsToKeep.tail: _*)
   }
 
@@ -32,25 +32,17 @@ object DataCleaner {
     * @param dataFrame
     * @return DataFrame
     */
+
   def cleanAppOrSite(dataFrame: DataFrame): DataFrame = {
     dataFrame.withColumn(colName = "appOrSite",
-      when(lower(col("appOrSite")).contains("app"), "app")
-        .when(lower(col("appOrSite")).contains("site"), "site")
-        .otherwise(EMPTY_VAL))
+      when(lower(col("appOrSite")).contains("app"), 1)
+        .when(lower(col("appOrSite")).contains("site"), 2)
+        .otherwise(3))
+
   }
 
 
-  /**
-    * Replace Array[String] value of AppOrSite with String value
-    * And replace empty columns with "N/A"
-    * @param dataFrame
-    * @return DataFrame
-    */
-  def cleanSize(dataFrame: DataFrame): DataFrame = {
-    dataFrame.withColumn(colName = "size",
-      when(col("size").isNotNull, concat(col("size")(0),lit("x"),col("size")(1)))
-        .otherwise(EMPTY_VAL))
-  }
+
 
 
   /**
@@ -59,11 +51,11 @@ object DataCleaner {
     */
   def cleanOS(dataFrame: DataFrame): DataFrame = {
     dataFrame.withColumn(colName = "os",
-      when(lower(col("os")).contains("android"), "android")
-        .when(lower(col("os")).contains("ios"), "ios")
-        .when(lower(col("os")).contains("windows"), "windows")
-        .when(lower(col("os")).contains("rim"), "rim")
-        .otherwise(EMPTY_VAL))
+      when(lower(col("os")).contains("android"), 1)
+        .when(lower(col("os")).contains("ios"), 2)
+        .when(lower(col("os")).contains("windows"), 3)
+        .when(lower(col("os")).contains("rim"), 4)
+        .otherwise(0))
   }
 
   /**
@@ -86,14 +78,8 @@ object DataCleaner {
     dataFrame.na.fill(EMPTY_VAL,Seq("publisher"))
   }
 
-  /**
-    * Replace empty columns of Media with "N/A"
-    * @param dataFrame
-    * @return DataFrame
-    */
-  def cleanMedia(dataFrame: DataFrame): DataFrame = {
-    dataFrame.na.fill(EMPTY_VAL,Seq("media"))
-  }
+
+
 
   /**
     * Replace empty columns of User with "N/A"
@@ -104,13 +90,6 @@ object DataCleaner {
     dataFrame.na.fill(EMPTY_VAL,Seq("user"))
   }
 
-  /**
-    * Replace sub-value of Interests with mother value (example : "IAB1-4" is replaced with "IAB1")
-    * And replace empty columns with "N/A"
-    * @param dataFrame
-    * @return DataFrame
-    */
-
 
   /**
     * Replace empty columns of Timestamp with "N/A"
@@ -120,12 +99,13 @@ object DataCleaner {
   def cleanTimestamp(dataFrame: DataFrame): DataFrame = {
     val df = dataFrame.withColumn("timestamp", hour(from_unixtime(col("timestamp"))))
     df.withColumn(colName = "timestamp",
-      when(col("timestamp") >= 20, "evening")
-        .when(col("timestamp") >= 15 && col("timestamp") < 20, "afternoon")
-        .when(col("timestamp") >= 10 && col("timestamp") < 15, "midday")
-        .when(col("timestamp") >= 0 && col("timestamp") < 10, "morning")
-        .otherwise(EMPTY_VAL)
+      when(col("timestamp") >= 20, 1)
+        .when(col("timestamp") >= 15 && col("timestamp") < 20, 2)
+        .when(col("timestamp") >= 10 && col("timestamp") < 15, 3)
+        .when(col("timestamp") >= 0 && col("timestamp") < 10, 4)
+        .otherwise(5)
     )
+
   }
   def cleanInterests(dataFrame: DataFrame): DataFrame = {
     import spark.implicits._
@@ -142,6 +122,15 @@ object DataCleaner {
     dfWithArray
   }
 
+  def cleanExchange(dataFrame: DataFrame): DataFrame = {
+    val df_non_null = dataFrame.na.fill(0, Seq("exchange"))
+    df_non_null.withColumn("exchange", when(col("exchange").contains("f8dd61fb7d4ebfa62cd6acceae3f5c69"), 1)
+      .when(col("exchange").contains("c7a327a5027c1c4de094b0a9f33afad6"), 2)
+      .when(col("exchange").contains("46135ae0b4946b5f2f74274e5618e697"), 3)
+      .when(col("exchange").contains("fe86ac12a6d9ccaa8a2be14a80ace2f8"), 4)
+      .otherwise(0)
+    )
+  }
   def cleanType(dataFrame: DataFrame): DataFrame = {
     val cleanDF = dataFrame.withColumn("type",
       when(col("type") === "CLICK", 4)
@@ -152,7 +141,21 @@ object DataCleaner {
     cleanDF.na.fill(5, Seq("type"))
   }
 
-
+  def cleanMedia(dataFrame: DataFrame): DataFrame = {
+    val df_non_null = dataFrame.na.fill(EMPTY_VAL, Seq("media"))
+    df_non_null.withColumn("media", when(col("media").contains("d476955e1ffb87c18490e87b235e48e7"), 1)
+      .when(col("media").contains("343bc308e60156fb39cd2af57337a958"), 2)
+      .otherwise(0)
+    )
+  }
+  def cleanSize(dataFrame: DataFrame): DataFrame = {
+    dataFrame.withColumn("size",
+      when(col("size").isNotNull && col("size")(0).equals(col("size")(1)), 1)
+        .when(col("size").isNotNull && col("size")(0) > col("size")(1), 2)
+        .when(col("size").isNotNull && col("size")(0) < col("size")(1), 3)
+        .otherwise(0)
+    )
+  }
 
   /**
     *
@@ -161,7 +164,7 @@ object DataCleaner {
     */
   def cleanLabel(dataFrame: DataFrame): DataFrame = {
     dataFrame.withColumn(colName = "label",
-      when(col("label") === "true", 1.0)
+      when(col("label") === "false", 1.0)
         .otherwise(0.0)
     )
   }
@@ -185,7 +188,8 @@ object DataCleaner {
     val dataFrameCleanInterests = cleanInterests(dataFrameCleanUser)
     val dataFrameCleanTimestamp = cleanTimestamp(dataFrameCleanInterests)
     val dataFrameCleanType = cleanType(dataFrameCleanTimestamp)
-    val dataFrameCleanLabel = cleanLabel(dataFrameCleanType)
+    val dataFrameCleanExchange = cleanExchange(dataFrameCleanType)
+    val dataFrameCleanLabel = cleanLabel(dataFrameCleanExchange)
     dataFrameCleanLabel
   }
 
@@ -214,6 +218,13 @@ object DataCleaner {
 
     df2
 
+  }
+  def predictionToRes(df : DataFrame) : DataFrame = {
+    var df2 :DataFrame = null
+    df2.withColumn("label",df("prediction"))
+
+
+    df
   }
 
 }
