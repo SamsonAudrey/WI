@@ -1,7 +1,8 @@
+package tools
+
+import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.{col, when, _}
-import org.apache.spark.ml.feature.{StringIndexer, StringIndexerModel}
-import org.apache.spark.sql
 
 object DataCleaner {
 
@@ -21,7 +22,7 @@ object DataCleaner {
    */
   def selectColumns(dataFrame: DataFrame): DataFrame = {
     //val allColumns = Seq("network", "appOrSite", "timestamp", "size", "label", "os", "exchange", "bidFloor", "publisher", "media", "user", "interests", "type", "city", "impid")
-    val columnsToKeep = Seq("appOrSite", "timestamp", "size", "label", "os", "bidFloor", "publisher", "media", "user", "interests")
+    val columnsToKeep = Seq("appOrSite", "timestamp", "size", "label", "os", "bidFloor", "publisher", "media", "user","interests","type")
     dataFrame.select(columnsToKeep.head, columnsToKeep.tail: _*)
   }
 
@@ -109,12 +110,7 @@ object DataCleaner {
     * @param dataFrame
     * @return DataFrame
     */
-  def cleanInterest(dataFrame: DataFrame): DataFrame = {
-    dataFrame.withColumn(colName = "interests",
-      when(col("interests").isNotNull, regexp_replace(dataFrame("interests"), "(-)[0-9]+", ""))
-        .otherwise(EMPTY_VAL)
-    )
-  }
+
 
   /**
     * Replace empty columns of Timestamp with "N/A"
@@ -131,6 +127,31 @@ object DataCleaner {
         .otherwise(EMPTY_VAL)
     )
   }
+  def cleanInterests(dataFrame: DataFrame): DataFrame = {
+    import spark.implicits._
+    //Delete "IAB" and sub-categories of interests
+    val dfWithoutIab = dataFrame.withColumn("interests", regexp_replace(dataFrame("interests"), "IAB|-[0-9]*", ""))
+    //Fill N/A values
+    val df_non_null = dfWithoutIab.na.fill("UNKNOWN", Seq("interests"))
+    //Transform interests to Array of interest number
+    var dfWithArray = df_non_null.withColumn("interests", split($"interests", ",").cast("array<String>"))
+    //Create a new column for each interest with 0 (not interested) or 1 (interested)
+    for (i <- 1 to 26) dfWithArray = dfWithArray.withColumn("IAB" + i.toString, array_contains(col("interests"), i.toString).cast("Int"))
+    //dfWithArray.printSchema()
+    //dfWithArray.show(10)
+    dfWithArray
+  }
+
+  def cleanType(dataFrame: DataFrame): DataFrame = {
+    val cleanDF = dataFrame.withColumn("type",
+      when(col("type") === "CLICK", 4)
+        .when(col("type") === "0", 0)
+        .when(col("type") === "1", 1)
+        .when(col("type") === "2", 2)
+        .when(col("type") === "3", 3))
+    cleanDF.na.fill(5, Seq("type"))
+  }
+
 
 
   /**
@@ -161,9 +182,10 @@ object DataCleaner {
     val dataFrameCleanPublisher = cleanPublisher(dataFrameCleanBFloor)
     val dataFrameCleanMedia = cleanMedia(dataFrameCleanPublisher)
     val dataFrameCleanUser = cleanUser(dataFrameCleanMedia)
-    val dataFrameCleanInterests = cleanInterest(dataFrameCleanUser)
+    val dataFrameCleanInterests = cleanInterests(dataFrameCleanUser)
     val dataFrameCleanTimestamp = cleanTimestamp(dataFrameCleanInterests)
-    val dataFrameCleanLabel = cleanLabel(dataFrameCleanTimestamp)
+    val dataFrameCleanType = cleanType(dataFrameCleanTimestamp)
+    val dataFrameCleanLabel = cleanLabel(dataFrameCleanType)
     dataFrameCleanLabel
   }
 

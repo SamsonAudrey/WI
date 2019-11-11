@@ -1,14 +1,10 @@
-import org.apache.spark.SparkContext
-import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.ml.classification.RandomForestClassifier
-import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, MulticlassClassificationEvaluator}
-import org.apache.spark.sql.{Column, DataFrame, SparkSession}
-import org.apache.spark.ml.feature.{OneHotEncoder, StringIndexer, VectorAssembler, VectorIndexer, _}
-import org.apache.spark.ml.tuning.{CrossValidator, CrossValidatorModel, ParamGridBuilder}
-import org.apache.spark.mllib.evaluation.MulticlassMetrics
-import org.apache.spark.mllib.tree.model.RandomForestModel
+package models
 
-import scala.math.BigDecimal
+import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
+import org.apache.spark.ml.{Pipeline, PipelineModel}
+import org.apache.spark.sql.DataFrame
+import tools.Metrics
 
 object RFModel  {
 
@@ -37,7 +33,7 @@ object RFModel  {
 
         //_________________________DATAFRAMES PREPARTION ________________________________
         // Choice of the features used to predict
-        val cols = Array("appOrSiteIndex","bidFloor", "timestampIndex", "sizeIndex", "osIndex", "mediaIndex")
+        val cols = Array("appOrSiteIndex","bidFloor", "timestampIndex", "sizeIndex", "osIndex", "mediaIndex" , "type", "IAB1", "IAB2", "IAB3", "IAB4", "IAB5", "IAB6", "IAB7", "IAB8", "IAB9", "IAB10", "IAB11", "IAB12", "IAB13", "IAB14", "IAB15", "IAB16", "IAB17", "IAB18", "IAB19", "IAB20", "IAB21", "IAB22", "IAB23", "IAB24", "IAB25", "IAB26")
 
         // Adding the features column to the DF
         val assembler = new VectorAssembler()
@@ -89,6 +85,7 @@ object RFModel  {
 
         // test model with test data
         val predictionDf = pipelineModel.transform(pipelineTestingData)
+
 
     //_____________________________________________________________________________________________________________
 

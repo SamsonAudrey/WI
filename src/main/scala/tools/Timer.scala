@@ -1,3 +1,5 @@
+package tools
+
 object Timer {
   def time[R](block: => R): R = {
     val t0 = System.nanoTime()

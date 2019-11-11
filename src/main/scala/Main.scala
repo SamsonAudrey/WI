@@ -1,6 +1,8 @@
 import java.io.File
 
+import models.RFModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import tools.{DataCleaner, Metrics}
 
 object Main extends App {
 
@@ -56,11 +58,12 @@ object Main extends App {
 
     println(s"Cleaning $pathToDataJSON ")
 
-    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw.limit(10000))
+    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw.limit(1000000))
+  dataStudentsCleaned.show(10)
 
 
     // Indexing
-    val indexedDataFrame = DataCleaner.transfromToIndexColumn(dataStudentsCleaned, Array("appOrSite", "size", "os", "timestamp", "publisher", "media", "user", "interests"))
+    val indexedDataFrame = DataCleaner.transfromToIndexColumn(dataStudentsCleaned, Array("appOrSite", "size", "os", "timestamp", "publisher", "media", "user"))
 
 
     task match {

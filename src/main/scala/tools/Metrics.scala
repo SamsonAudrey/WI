@@ -1,3 +1,5 @@
+package tools
+
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.mllib.evaluation.MulticlassMetrics
 import org.apache.spark.sql.DataFrame
