@@ -58,13 +58,13 @@ object Main extends App {
       case "train" =>
         println(s"Cleaning $pathToDataJSON ")
 
-        val dataStudentsCleaned =DataCleaner.clean(dataStudentsRaw.limit(10))
+        val dataStudentsCleaned =DataCleaner.clean(dataStudentsRaw)
         RFModel.train(dataStudentsCleaned)
 
       case "predict"=>   {
         println(s"Cleaning $pathToDataJSON ")
 
-        val dataStudentsCleaned =DataCleaner.predictClean(dataStudentsRaw.limit(10))
+        val dataStudentsCleaned =DataCleaner.predictClean(dataStudentsRaw)
 
         val data = dataStudentsCleaned.withColumnRenamed("bidfloor","bidFloor")
         data.show(5)
