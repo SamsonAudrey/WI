@@ -14,7 +14,18 @@ This project was developed in scala with apache spark.
 First you have to download the project 
 
 ```shell
-git clone 
-cd 
-sbt
+git clone https://github.com/SamsonAudrey/WI.git
+cd WI-master ???
 ```
+Once placed in the project 
+
+```shell
+sbt
+run [pathToData] [task]     
+```
+ 
+[pathToData]: replace it by your json file path
+
+[task] : two possible values : train or predict 
+
+usage examples : <span style="color:red"> run mypath/to/data/data.json predict </span>   or      run mypath/to/data/data.json train
