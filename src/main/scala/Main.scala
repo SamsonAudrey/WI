@@ -49,7 +49,7 @@ object Main extends App {
 
     println(s"Cleaning $pathToDataJSON ")
 
-    val dataStudentsCleaned =DataCleaner.clean(dataStudentsRaw.limit(1000))
+    val dataStudentsCleaned =DataCleaner.clean(dataStudentsRaw)
 
 
 
@@ -102,7 +102,7 @@ object Main extends App {
           .mode ("overwrite")
           .format("com.databricks.spark.csv")
           .option("header", "true")
-          .save(s"testPredictions.csv")
+          .save(s"PREDICTIONCSV")
 
       }
       case _ => println(" TASK unknown you should choose a task between train and predict ")

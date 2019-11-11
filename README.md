@@ -42,4 +42,4 @@ run [pathToData] [task]
 
 ### Results
 
-you will find the result csv in the PREDICTIONCSV folder 
+For a predict task you will find the result csv in the PREDICTIONCSV folder 

@@ -21,9 +21,9 @@ object RFModel  {
       // Assume that the DF is clean
       def train(df :DataFrame ) {
 
-        val nbTree = 40
-        val depth = 8
-        val maxBins = 100
+        val nbTree = 50
+        val depth = 9
+        val maxBins = 110
         val trueRate = 0.965
         val falseRate = 0.035
         val seed = 5043
@@ -52,7 +52,7 @@ object RFModel  {
 
         // Spliting Data in test and train set
 
-        val Array(pipelineTrainingData, pipelineTestingData) = df.randomSplit(Array(0.75, 0.25), seed)
+        val Array(pipelineTrainingData, pipelineTestingData) = df.randomSplit(Array(0.80, 0.20), seed)
          //_______________________________________________________________________________________________________
 
           //_________________________________________CREATING CLASSIFIER __________________________________________
