@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.ml.feature.VectorAssembler","timestamp":1573338162579,"sparkVersion":"2.3.0","uid":"vecAssembler_272cebe4739a","paramMap":{"inputCols":["appOrSiteIndex","bidFloor","timestampIndex","sizeIndex","osIndex","mediaIndex"],"outputCol":"features"}}

@@ -28,14 +28,13 @@ object Metrics {
     println(s" Confusion Matrix\n ${confusionMatrix.toString}\n")
 
 
-    println(s"ACCURACY      : ${(accuracy*100).toString.substring(0,5) } %")
+    println(s"ACCURACY      : ${(accuracy*100).toString } %")
     //                                      TP                 /        TP               +          FP
     println(s"RAPPEL : ${ ( (confusionMatrix.apply(0,0) / (confusionMatrix.apply(0,0)+confusionMatrix.apply(0,1)) )*100 ).toString } %")
     //                                      TP                 /        TP               +          FN
     println(s"PRECISION         : ${ ( (confusionMatrix.apply(0,0) / (confusionMatrix.apply(0,0)+confusionMatrix.apply(1,0)) )*100 ).toString } %")
 
-    println("WeightedPrecision : " + metrics.weightedPrecision)
-    println("WeightedRecall : " + metrics.weightedRecall)
+
 
   }
 }

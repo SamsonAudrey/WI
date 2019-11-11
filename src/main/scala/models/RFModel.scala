@@ -22,7 +22,7 @@ object RFModel  {
       def train(df :DataFrame ) {
 
         val nbTree = 40
-        val depth = 7
+        val depth = 8
         val maxBins = 100
         val trueRate = 0.965
         val falseRate = 0.035

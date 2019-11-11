@@ -3,6 +3,7 @@ import java.io.File
 import models.RFModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import tools.{DataCleaner, Metrics , Timer}
+import org.apache.spark.sql.functions._
 
 object Main extends App {
 
@@ -48,7 +49,7 @@ object Main extends App {
 
     println(s"Cleaning $pathToDataJSON ")
 
-    val dataStudentsCleaned = DataCleaner.clean(dataStudentsRaw)
+    val dataStudentsCleaned =DataCleaner.clean(dataStudentsRaw.limit(1000))
 
 
 
@@ -61,7 +62,7 @@ object Main extends App {
       case "predict"=>   {
         val myModel = RFModel.load()
         val predictionDf = RFModel.predict(dataStudentsCleaned, myModel )
-
+        predictionDf.show(5)
         Metrics.show(predictionDf)
 
         var timerDataset = dataStudentsRaw.limit(1000)
@@ -87,9 +88,21 @@ object Main extends App {
 
         }
 
-        //val res : DataFrame= res.withColumn("label" , predictionDf("prediction"))
-        //res.coalesce(1).write.csv("res.csv")
 
+        //val res : DataFrame= dataStudentsRaw.withColumn("label", when(predictionDf.col("prediction") === 0.0, false).otherwise(true))
+
+        val df = dataStudentsRaw.withColumn("id", monotonically_increasing_id()).drop("label")
+        val pred = predictionDf.withColumn("prediction", when(col("prediction") === 0.0, true).otherwise(false))
+        val labelColumn = pred.select("prediction").withColumn("idl", monotonically_increasing_id())
+        val dataFrameToSave = labelColumn.join(df, col("idl") === col("id"), "left_outer").drop("id").drop("idl")
+        val res = dataFrameToSave.withColumnRenamed("prediction", "label").withColumn("size", DataCleaner.sizeToString(col("size")))
+        res.show(5)
+        res.repartition(1).coalesce(1)
+          .write
+          .mode ("overwrite")
+          .format("com.databricks.spark.csv")
+          .option("header", "true")
+          .save(s"testPredictions.csv")
 
       }
       case _ => println(" TASK unknown you should choose a task between train and predict ")

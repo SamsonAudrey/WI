@@ -2,7 +2,7 @@ package tools
 
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 
 object DataCleaner {
 
@@ -156,7 +156,14 @@ object DataCleaner {
         .otherwise(0)
     )
   }
-
+ /* def cleanSize(dataFrame : DataFrame): DataFrame = {
+    dataFrame.withColumn(colName = "size",
+      when(col("size").isNotNull, concat(col("size")(0),lit("x"),col("size")(1)))
+        .otherwise(EMPTY_VAL))
+  }*/
+def sizeToString(c : Column): Column = {
+  concat(lit("["), concat_ws(",", c), lit("]"))
+}
   /**
     *
     * @param dataFrame
