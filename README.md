@@ -26,6 +26,6 @@ run [pathToData] [task]
  
 [pathToData]: replace it by your json file path
 
-[task] : two possible values : train or predict <span style="color:red">cardinaux</span>
+[task] : two possible values : *train*  **or** *predict*
 
-usage examples : <span style="color:red"> run mypath/to/data/data.json predict </span>   or      run mypath/to/data/data.json train
+usage examples :  *run mypath/to/data/data.json predict*   **or**     *run mypath/to/data/data.json train*
