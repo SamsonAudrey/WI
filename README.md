@@ -40,4 +40,6 @@ run [pathToData] [task]
 
 *usage examples* :  run mypath/to/data/data.json predict  &nbsp; &nbsp;  **or**  &nbsp; &nbsp;   run mypath/to/data/data.json train
 
+### Results
 
+you will find the result csv in the PREDICTIONCSV folder 
