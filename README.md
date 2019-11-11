@@ -1,4 +1,4 @@
-# WILLClick :crystal_ball:
+# WIClick :crystal_ball:
 
 ## Project presentation 
 
