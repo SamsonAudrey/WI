@@ -24,8 +24,8 @@ sbt
 run [pathToData] [task]     
 ```
  
-[pathToData]: replace it by your json file path
+*[pathToData]* : replace it by your json file path
 
-[task] : two possible values : *train*  **or** *predict*
+*[task]* : two possible values : train  **or** predict
 
-usage examples :  *run mypath/to/data/data.json predict*   **or**     *run mypath/to/data/data.json train*
+*usage examples* :  run mypath/to/data/data.json predict  &nbsp; &nbsp;  **or**  &nbsp; &nbsp;   run mypath/to/data/data.json train
