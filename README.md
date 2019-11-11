@@ -15,9 +15,9 @@ The objective of this project is to determine whether or not a user will click o
 ### Requirements
 This project was developed in scala with apache spark.
 
-* Scala ( Version 2.11.12)
-* Spark ( Version 2.3 ) 
-* Sbt ( Version )
+* Scala (Version 2.11.12)
+* Spark (Version 2.3) 
+* Sbt   (Version 1.2.8)
 
 ### Launching and Usage 
 
