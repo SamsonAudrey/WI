@@ -9,4 +9,12 @@ This project was developed in scala with apache spark.
 * Spark ( Version 2.3 ) 
 * Sbt ( Version )
 
-### 
+### Launching and Usage 
+
+First you have to download the project 
+
+```shell
+git clone 
+cd 
+sbt
+```
