@@ -1,4 +1,4 @@
-# WIClick
+# WIClick :crystal_ball:
 
 ## Project presentation 
 
@@ -12,14 +12,14 @@ The objective of this project is to determine whether or not a user will click o
 - Nathan Traineau [NathanTraineau](https://github.com/NathanTraineau)  
 ## Geting Started 
 
-### Requirements
+### Requirements :bangbang: :warning:
 This project was developed in scala with apache spark.
 
 * Scala (Version 2.11.12)
 * Spark (Version 2.3) 
 * Sbt   (Version 1.2.8)
 
-### Launching and Usage 
+### Launching and Usage :rocket:
 
 First you have to download the project 
 
